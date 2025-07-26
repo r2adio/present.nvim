@@ -62,7 +62,7 @@ local create_window_configuration = function()
 
 	local header_height = 1 + 2 -- 1 + border
 	local footer_height = 1 -- 1, no border
-	local body_height = height - header_height - footer_height - 2 -- for our own border
+	local body_height = height - header_height - footer_height - 2 - 1 -- for our own border
 
 	return {
 		background = {
@@ -93,7 +93,7 @@ local create_window_configuration = function()
 			-- border = { " ", " ", " ", " ", " ", " ", " ", " " },
 			border = "solid",
 			col = 8,
-			row = 5,
+			row = 4,
 		},
 		footer = {
 			relative = "editor",
@@ -103,7 +103,7 @@ local create_window_configuration = function()
 			-- border = { " ", " ", " ", " ", " ", " ", " ", " " }, -- TODO: add border on top of footer
 			col = 0,
 			row = height - 1,
-			zindex = 2,
+			zindex = 3,
 		},
 	}
 end
@@ -134,6 +134,7 @@ M.start_presentation = function(opts)
 	local lines = vim.api.nvim_buf_get_lines(opts.bufnr, 0, -1, false)
 	state.parsed = parse_slides(lines)
 	state.current_slide = 1
+	state.title = vim.fn.fnamemodify(vim.api.nvim_buf_get_name(opts.bufnr), ":t")
 
 	-- func for creating all the windows
 	local windows = create_window_configuration()
@@ -154,7 +155,9 @@ M.start_presentation = function(opts)
 		local title = padding .. slide.title
 		vim.api.nvim_buf_set_lines(state.floats.header.buf, 0, -1, false, { title })
 		vim.api.nvim_buf_set_lines(state.floats.body.buf, 0, -1, false, slide.body)
-		vim.api.nvim_buf_set_lines(state.floats.footer.buf, 0, -1, false, { "footer" })
+
+		local footer = string.format("  %d / %d  |  %s ", state.current_slide, #state.parsed.slides, state.title)
+		vim.api.nvim_buf_set_lines(state.floats.footer.buf, 0, -1, false, { footer })
 	end
 
 	present_keymap("n", "n", function()
@@ -212,7 +215,7 @@ M.start_presentation = function(opts)
 	set_slide_content(state.current_slide)
 end
 
-M.start_presentation({ bufnr = 14 }) -- :echo nvim_get_current_buf
+M.start_presentation({ bufnr = 145 }) -- :echo nvim_get_current_buf
 -- vim.print(parse_slides({
 -- 	"plugin name: present.nvim",
 -- 	"# here is H1",
