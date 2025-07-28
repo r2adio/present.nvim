@@ -215,7 +215,6 @@ M.start_presentation = function(opts)
 	set_slide_content(state.current_slide)
 end
 
-M.start_presentation({ bufnr = 145 }) -- :echo nvim_get_current_buf
 -- vim.print(parse_slides({
 -- 	"plugin name: present.nvim",
 -- 	"# here is H1",
@@ -223,5 +222,9 @@ M.start_presentation({ bufnr = 145 }) -- :echo nvim_get_current_buf
 -- 	"## here is the H2",
 -- 	"body of H2",
 -- }))
---
+-- M.start_presentation({ bufnr = 145 }) -- :echo nvim_get_current_buf
+
+-- smthing that exists and wanna test, but dont wanna expose; and just for testing purpose => prefix w/ `underscore`
+M._parse_slides = parse_slides
+
 return M
