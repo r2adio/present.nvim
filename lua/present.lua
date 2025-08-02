@@ -50,7 +50,7 @@ local parse_slides = function(lines)
 		else
 			table.insert(current_slide.body, line)
 		end
-		table.insert(current_slide, line)
+		-- table.insert(current_slide, line)
 	end
 	table.insert(slides.slides, current_slide)
 	return slides

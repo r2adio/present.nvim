@@ -16,12 +16,12 @@ describe("present.parse_slides", function()
 		eq(
 			{
 				slides = {
-					{ title = '# first slide', body = { "body of first slide" } },
+					{ title = "# slide 1", body = { "body 1" } },
 				},
 			},
 			parse({
-				"# first slide",
-				"body of first slide",
+				"# slide 1",
+				"body 1",
 			})
 		)
 	end)
