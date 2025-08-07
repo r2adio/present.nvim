@@ -24,6 +24,11 @@ end
 ---@class present.Slide
 ---@field title string: The title of the slide
 ---@field body string[]: The body of slide
+---@field blocks present.Block[]: A codeblock inside of a slide
+
+---@class present.Block
+---@field language string: Language of the codeblock
+---@field body string: The body of the codeblock
 
 -- Takes some lines and parses them
 ---@param lines string[]: The lines in the buffer
@@ -33,9 +38,10 @@ local parse_slides = function(lines)
 	local current_slide = {
 		title = "",
 		body = {},
+		blocks = {},
 	}
 
-	local separator = "^#"
+	local separator = "^# " -- only Heading 1
 
 	for _, line in ipairs(lines) do
 		-- print(line, "find:", line:find(separator), "|")
@@ -46,6 +52,7 @@ local parse_slides = function(lines)
 			current_slide = {
 				title = line,
 				body = {},
+				blocks = {},
 			}
 		else
 			table.insert(current_slide.body, line)
@@ -53,6 +60,32 @@ local parse_slides = function(lines)
 		-- table.insert(current_slide, line)
 	end
 	table.insert(slides.slides, current_slide)
+
+	-- iterate over all slides and check for different blocks
+	for _, slide in ipairs(slides.slides) do
+		local block = { language = nil, body = "" }
+		local inside_block = false
+		for _, line in ipairs(slide.body) do
+			if vim.startswith(line, "```") then
+				if not inside_block then
+					inside_block = true
+					block.language = string.sub(line, 4)
+				else
+					inside_block = false
+					block.body = vim.trim(block.body) -- removing extra white space
+					table.insert(slide.blocks, block)
+				end
+			else
+				-- inside of a current markdown block
+				-- but it is not one of the guards.
+				-- so insert this text
+				if inside_block then
+					block.body = block.body .. line .. "\n"
+				end
+			end
+		end
+	end
+
 	return slides
 end
 
@@ -171,8 +204,13 @@ M.start_presentation = function(opts)
 	present_keymap("n", "q", function()
 		vim.api.nvim_win_close(state.floats.body.win, true)
 	end)
+	present_keymap("n", "X", function()
+		local slide = state.parsed.slides[state.current_slide]
+		vim.print(slide)
+	end)
 
 	local restore = { cmdheight = { original = vim.o.cmdheight, custom = 0 } }
+
 	-- sets the cmdheight needed for presentation
 	for option, config in pairs(restore) do
 		vim.opt[option] = config.custom
