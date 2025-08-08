@@ -206,7 +206,61 @@ M.start_presentation = function(opts)
 	end)
 	present_keymap("n", "X", function()
 		local slide = state.parsed.slides[state.current_slide]
-		vim.print(slide)
+		-- TODO: support for other languages
+		local block = slide.blocks[1]
+		if not block then
+			print("No blocks on this page.")
+			return
+		end
+
+		-- override the default print function, to capture all the output
+		-- store the original print function
+		local original_print = print
+
+		-- table to capture print message
+		local output = { "", "# Code", "", "```" .. block.language }
+		vim.list_extend(output, vim.split(block.body, "\n"))
+		table.insert(output, "```")
+
+		-- redefine the print function
+		print = function(...)
+			local args = { ... }
+			local message = table.concat(vim.tbl_map(tostring, args), "\t")
+			table.insert(output, message)
+		end
+
+		-- call the provided function
+		local chunk = loadstring(block.body)
+		pcall(function()
+			table.insert(output, "")
+			table.insert(output, "# Output")
+			table.insert(output, "")
+			if not chunk then
+				table.insert(output, "<<<BROKEN CODE>>>")
+			else
+				chunk() -- handling nil value
+			end
+		end)
+
+		-- restore the original print function
+		print = original_print
+
+		local buf = vim.api.nvim_create_buf(false, true) -- no file, scratch buffer
+		local temp_width = math.floor(vim.o.columns * 0.8)
+		local temp_height = math.floor(vim.o.lines * 0.8)
+		vim.api.nvim_open_win(buf, true, {
+			relative = "editor",
+			style = "minimal",
+			noautocmd = true,
+			width = temp_width,
+			height = temp_height,
+			row = math.floor((vim.o.lines - temp_height) / 2),
+			col = math.floor((vim.o.columns - temp_width) / 2),
+			border = "rounded",
+		})
+
+		vim.bo[buf].filetype = "markdown"
+		vim.api.nvim_buf_set_lines(buf, 0, -1, false, output)
 	end)
 
 	local restore = { cmdheight = { original = vim.o.cmdheight, custom = 0 } }
