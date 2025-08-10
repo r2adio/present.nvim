@@ -10,8 +10,15 @@ To provide a clean and simple way to use markdowns for presentation
 
 # Usage
 
+```javascript
+console.log({ myfield: true, other: false });
+```
+
+# Usage
+
 ```lua
-require("present").start_presentation{}
+-- require("present").start_presentation{}
+print("hi there")
 ```
 
 ## Motion
