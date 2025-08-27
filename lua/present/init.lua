@@ -62,7 +62,7 @@ end
 
 -- use `echo executable('')` to check the status of executable
 local execute_js = M.create_system_executor("node")
-local execute_py = M.create_system_executor("python3")
+local execute_py = M.create_system_executor("python")
 
 local options = {
 	executors = {
@@ -77,8 +77,8 @@ M.setup = function(opts)
 	opts.executors = opts.executors or {}
 
 	opts.executors.lua = opts.executors.lua or execute_lua
-	opts.executors.javascript = opts.executors.lua or M.create_system_executor("node")
-	opts.executors.python = opts.executors.lua or M.create_system_executor("python3")
+	opts.executors.javascript = opts.executors.javascript or M.create_system_executor("node")
+	opts.executors.python = opts.executors.python or M.create_system_executor("python")
 
 	options = opts
 end
